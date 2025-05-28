@@ -416,7 +416,7 @@ function initButtons() {
         <button id="showRules">规则</button>
         <button id="undo">撤回</button>
         <button id="submit">提交答案</button>
-    `;
+    `;  // 移除showAnswer按钮
 
     // 规则按钮事件
     document.getElementById('showRules').addEventListener('click', () => {
@@ -437,27 +437,6 @@ function initButtons() {
         const td = document.querySelector(`#operationPanel td[data-x="${last.x}"][data-y="${last.y}"]`);
         td.classList.remove('clicked');
         rotateGrid(last.x, last.y, last.color === 'red' ? 'blue' : 'red');
-    });
-
-    // 显示答案按钮事件
-    document.getElementById('showAnswer').addEventListener('click', () => {
-        document.querySelectorAll('#targetPanel td').forEach(td => {
-            td.querySelectorAll('.order, .count').forEach(e => e.remove());
-        });
-
-        const validSteps = solutionSteps.filter(step => step.count === 1);
-        
-        validSteps.forEach((step, index) => {
-            const td = document.querySelector(
-                `#targetPanel td[data-x="${step.x}"][data-y="${step.y}"]`
-            );
-            if (td) {
-                const order = document.createElement('div');
-                order.className = 'order';
-                order.textContent = index + 1;
-                td.appendChild(order);
-            }
-        });
     });
 
     // 提交按钮事件

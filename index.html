@@ -109,6 +109,41 @@
         .clicked.blue {
             background-color: #8888ff !important;
         }
+
+        /* 新增规则弹窗样式 */
+        .rules-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .rules-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 80%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .rules-title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .rules-text {
+            font-size: 16px;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -117,6 +152,19 @@
         <div id="targetPanel"></div>
     </div>
     <div class="button-container" id="buttonContainer"></div>
+
+    <!-- 添加规则弹窗 -->
+    <div class="rules-overlay" id="rulesOverlay">
+        <div class="rules-content">
+            <div class="rules-title">规则</div>
+            <div class="rules-text">
+                <p>1.请通过点击红色或者蓝色按钮改变黑色圆点的位置，让操作盘面和目标盘面的黑点位置一致。</p>
+                <p>2.每一个按钮最多点击1次。</p>
+                <p>3.每个按钮可控制以它为中心周围3 * 3范围内所有黑点的移动。移动时将该范围看成一个矩阵作相应方向的旋转。</p>
+                <p>4.红色按钮会顺时针旋转矩阵90°，蓝色按钮会逆时针旋转矩阵90°。</p>
+            </div>
+        </div>
+    </div>
 
 <script>
     const GRID_SIZE = 7;
@@ -362,32 +410,44 @@
         panel.appendChild(table);
     }
 
-    function initButtons() {
-        const container = document.getElementById('buttonContainer');
-        container.innerHTML = `
-            <button id="undo">撤回</button>
-            <button id="showAnswer">显示答案</button>
-            <button id="submit">提交答案</button>
-        `;
+function initButtons() {
+    const container = document.getElementById('buttonContainer');
+    container.innerHTML = `
+        <button id="showRules">规则</button>
+        <button id="undo">撤回</button>
+        <button id="showAnswer">显示答案</button>
+        <button id="submit">提交答案</button>
+    `;
 
-        document.getElementById('undo').addEventListener('click', () => {
-            if (operationHistory.length === 0) return;
-            const last = operationHistory.pop();
-            const td = document.querySelector(`#operationPanel td[data-x="${last.x}"][data-y="${last.y}"]`);
-            td.classList.remove('clicked');
-            rotateGrid(last.x, last.y, last.color === 'red' ? 'blue' : 'red');
-        });
+    // 规则按钮事件
+    document.getElementById('showRules').addEventListener('click', () => {
+        document.getElementById('rulesOverlay').style.display = 'flex';
+    });
 
+    // 关闭规则弹窗
+    document.getElementById('rulesOverlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('rulesOverlay')) {
+            document.getElementById('rulesOverlay').style.display = 'none';
+        }
+    });
+
+    // 撤回按钮事件
+    document.getElementById('undo').addEventListener('click', () => {
+        if (operationHistory.length === 0) return;
+        const last = operationHistory.pop();
+        const td = document.querySelector(`#operationPanel td[data-x="${last.x}"][data-y="${last.y}"]`);
+        td.classList.remove('clicked');
+        rotateGrid(last.x, last.y, last.color === 'red' ? 'blue' : 'red');
+    });
+
+    // 显示答案按钮事件
     document.getElementById('showAnswer').addEventListener('click', () => {
-        // 清除目标面板原有标记
         document.querySelectorAll('#targetPanel td').forEach(td => {
             td.querySelectorAll('.order, .count').forEach(e => e.remove());
         });
 
-        // 获取有效操作步骤并重新排序
         const validSteps = solutionSteps.filter(step => step.count === 1);
         
-        // 添加新标记（按有效步骤的实际操作顺序编号）
         validSteps.forEach((step, index) => {
             const td = document.querySelector(
                 `#targetPanel td[data-x="${step.x}"][data-y="${step.y}"]`
@@ -395,26 +455,27 @@
             if (td) {
                 const order = document.createElement('div');
                 order.className = 'order';
-                order.textContent = index + 1;  // 使用新的顺序编号
+                order.textContent = index + 1;
                 td.appendChild(order);
             }
         });
     });
 
-        document.getElementById('submit').addEventListener('click', () => {
-            const getDots = panel => 
-                [...panel.querySelectorAll('.dot')].map(d => [
-                    parseInt(d.parentElement.rowIndex),
-                    parseInt(d.cellIndex)
-                ]).sort();
-            
-            const opDots = getDots(document.getElementById('operationPanel'));
-            const targetDots = getDots(document.getElementById('targetPanel'));
-            
-            alert(JSON.stringify(opDots) === JSON.stringify(targetDots) 
-                ? '成功！' : '失败！');
-        });
-    }
+    // 提交按钮事件
+    document.getElementById('submit').addEventListener('click', () => {
+        const getDots = panel => 
+            [...panel.querySelectorAll('.dot')].map(d => [
+                parseInt(d.parentElement.rowIndex),
+                parseInt(d.cellIndex)
+            ]).sort();
+        
+        const opDots = getDots(document.getElementById('operationPanel'));
+        const targetDots = getDots(document.getElementById('targetPanel'));
+        
+        alert(JSON.stringify(opDots) === JSON.stringify(targetDots) 
+            ? '成功！' : '失败！');
+    });
+}
 
     // 初始化游戏
     initOperationPanel();

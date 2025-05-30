@@ -14,6 +14,8 @@
             --warning-color: #ffcc00;
             --icon-color: #ffcc00;
             --active-color: #4a90e2;
+            --green-color: #44cc44;
+            --yellow-color: #eedd44;
         }
 
         * {
@@ -285,6 +287,14 @@
             background-color: #4444ff;
         }
 
+        .green {
+            background-color: var(--green-color);
+        }
+
+        .yellow {
+            background-color: var(--yellow-color);
+        }
+
         /* 修改为空心圆 */
         .dot::after {
             content: "";
@@ -324,6 +334,14 @@
         
         .clicked.blue {
             background-color: #8888ff !important;
+        }
+        
+        .clicked.green {
+            background-color: #aaffaa !important;
+        }
+        
+        .clicked.yellow {
+            background-color: #ffee77 !important;
         }
         
         /* 规则弹窗样式 */
@@ -531,7 +549,7 @@
             .banner-message {
                 font-size: 18px;
                 padding: 15px 25px;
-                min-width: 280px;
+        min-width: 280px;
             }
             
             .icon-button {
@@ -703,11 +721,10 @@
             <button class="close-btn" id="closeRules">×</button>
             <div class="rules-title">游戏规则</div>
             <div class="rules-text">
-                <p>1. 请通过点击红色或者蓝色按钮改变黑色圆点的位置，让操作盘面和目标盘面的黑点位置一致。</p>
-                <p>2. 每一个按钮最多点击1次。</p>
-                <p>3. 每个按钮可控制以它为中心周围3×3范围内所有黑点的移动。移动时将该范围看成一个矩阵作相应方向的旋转。</p>
-                <p>4. 红色按钮会顺时针旋转矩阵90°，蓝色按钮会逆时针旋转矩阵90°。</p>
-                <p>5. 盘面大小可以调整，最小为5×5，最大为9×9。</p>
+                <p>1. 请通过点击操作盘面中红蓝绿黄这四种颜色的按钮改变黑色圆形的位置，让操作盘面中所有黑色圆形的位置都和目标盘面的一致。</p>
+                <p>2. 每一个按钮最多点击1次（即可以不点击）。每个按钮可控制以它为中心周围3×3范围内所有黑色圆形的移动。移动时将该范围看成一个矩阵作相应的变换。</p>
+                <p>3. 红色按钮会顺时针旋转矩阵90°；蓝色按钮会逆时针旋转矩阵90°；绿色按钮会左右翻转矩阵；黄色按钮会上下翻转矩阵。</p>
+                <p>4. 盘面大小可以调整，最小为5×5，最大为9×9。</p>
             </div>
         </div>
     </div>
@@ -722,22 +739,47 @@
     const MIN_GRID_SIZE = 5;
     const MAX_GRID_SIZE = 9;
     
+    // 四种颜色按钮数量基于盘面大小
+    let BUTTON_COLORS = ['red', 'blue', 'green', 'yellow'];
+    
     // 按钮和黑点数量基于盘面大小
-    let RED_BUTTONS = Math.floor(INNER_SIZE * INNER_SIZE / 2);
-    let BLUE_BUTTONS = Math.floor(INNER_SIZE * INNER_SIZE / 2);
-    let TOTAL_BUTTONS = RED_BUTTONS + BLUE_BUTTONS;
+    const getButtonCounts = () => {
+        const totalButtons = INNER_SIZE * INNER_SIZE;
+        const baseCount = Math.floor(totalButtons / 4);
+        const remainder = totalButtons % 4;
+        
+        // 每种颜色至少baseCount个，剩余部分分配到随机颜色中
+        const counts = {
+            red: baseCount,
+            blue: baseCount,
+            green: baseCount,
+            yellow: baseCount
+        };
+        
+        // 将余数分配到随机颜色
+        const availableColors = [...BUTTON_COLORS];
+        for (let i = 0; i < remainder; i++) {
+            const randomIndex = Math.floor(Math.random() * availableColors.length);
+            const color = availableColors[randomIndex];
+            counts[color]++;
+        }
+        
+        return counts;
+    };
+    
+    // 黑点数量：约为内部区域的60%
     let DOTS = Math.floor(INNER_SIZE * INNER_SIZE * 0.6);
 
     let operationHistory = [];
     let solutionSteps = [];
     let initialDots = [];
     let moveCount = 0;
-    let gameStarted = false; // 标记游戏是否已开始
-    let isOrderVisible = false; // 是否显示顺序
-    let isAnswerVisible = false; // 是否显示答案
-    let hintUsed = false; // 是否使用过提示
-    let isRulesVisible = false; // 规则窗口是否显示
-    let isMenuVisible = false; // 菜单是否显示
+    let gameStarted = false;
+    let isOrderVisible = false;
+    let isAnswerVisible = false;
+    let hintUsed = false;
+    let isRulesVisible = false;
+    let isMenuVisible = false;
 
     // 显示横幅消息
     function showBannerMessage(message, type = "info") {
@@ -801,6 +843,10 @@
 
         // 如果游戏已经开始，生成按钮和点
         if (gameStarted) {
+            // 获取按钮数量
+            const buttonCounts = getButtonCounts();
+            const totalButtons = INNER_SIZE * INNER_SIZE;
+            
             // 生成所有中心区域的候选位置
             const allCenterPositions = [];
             for (let x = 1; x <= INNER_SIZE; x++) {
@@ -808,32 +854,44 @@
                     allCenterPositions.push(`${x},${y}`);
                 }
             }
-
-            // 随机打乱所有中心位置
+            
+            // 打乱位置
             for (let i = allCenterPositions.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [allCenterPositions[i], allCenterPositions[j]] = [allCenterPositions[j], allCenterPositions[i]];
             }
-
-            // 确保总共选取足够数量的位置
-            const selectedPositions = allCenterPositions.slice(0, TOTAL_BUTTONS);
-
-            // 分配按钮
-            const redPositions = selectedPositions.slice(0, RED_BUTTONS);
-            const bluePositions = selectedPositions.slice(RED_BUTTONS, TOTAL_BUTTONS);
-
-            // 应用红色按钮
-            redPositions.forEach(pos => {
+            
+            // 分配按钮颜色
+            let colorIndex = 0;
+            const colorAssignments = [];
+            
+            // 按照计算的数量分配颜色
+            for (const color in buttonCounts) {
+                for (let i = 0; i < buttonCounts[color]; i++) {
+                    colorAssignments.push(color);
+                }
+            }
+            
+            // 确保颜色分配数量正确
+            while (colorAssignments.length < totalButtons) {
+                const color = BUTTON_COLORS[Math.floor(Math.random() * BUTTON_COLORS.length)];
+                colorAssignments.push(color);
+            }
+            
+            // 随机打乱颜色分配
+            for (let i = colorAssignments.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [colorAssignments[i], colorAssignments[j]] = [colorAssignments[j], colorAssignments[i]];
+            }
+            
+            // 应用颜色
+            for (let i = 0; i < totalButtons; i++) {
+                const pos = allCenterPositions[i];
+                const color = colorAssignments[i];
                 const [x, y] = pos.split(',').map(Number);
-                table.rows[x].cells[y].classList.add('red');
-            });
-
-            // 应用蓝色按钮
-            bluePositions.forEach(pos => {
-                const [x, y] = pos.split(',').map(Number);
-                table.rows[x].cells[y].classList.add('blue');
-            });
-
+                table.rows[x].cells[y].classList.add(color);
+            }
+            
             // 生成黑点
             const dotPositions = generateRandomPositions(DOTS);
             initialDots = dotPositions;
@@ -863,10 +921,26 @@
             matrix.push(row);
         }
 
-        // 执行旋转
-        const rotated = color === 'red' ? rotateClockwise(matrix) : rotateCounterClockwise(matrix);
+        // 根据按钮颜色执行不同变换
+        let rotated;
+        switch (color) {
+            case 'red':
+                rotated = rotateClockwise(matrix);
+                break;
+            case 'blue':
+                rotated = rotateCounterClockwise(matrix);
+                break;
+            case 'green':
+                rotated = flipHorizontal(matrix);
+                break;
+            case 'yellow':
+                rotated = flipVertical(matrix);
+                break;
+            default:
+                rotated = matrix;
+        }
 
-        // 应用旋转后的状态
+        // 应用变换后的状态
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
                 const nx = x - 1 + i;
@@ -879,29 +953,41 @@
         }
     }
 
+    // 顺时针旋转90度
     function rotateClockwise(matrix) {
         return matrix[0].map((_, i) => 
             matrix.map(row => row[i]).reverse()
         );
     }
 
+    // 逆时针旋转90度
     function rotateCounterClockwise(matrix) {
         return matrix[0].map((_, i) => 
             matrix.map(row => row[row.length-1-i])
         );
     }
 
+    // 左右翻转（水平翻转）
+    function flipHorizontal(matrix) {
+        return matrix.map(row => row.reverse());
+    }
+
+    // 上下翻转（垂直翻转）
+    function flipVertical(matrix) {
+        return [...matrix].reverse();
+    }
+
     function handleButtonClick(e) {
         if (!gameStarted) return;
         
         const td = e.target;
-        if ((!td.classList.contains('red') && !td.classList.contains('blue')) || 
+        if (!BUTTON_COLORS.some(color => td.classList.contains(color)) || 
             td.classList.contains('clicked')) return;
 
         td.classList.add('clicked');
         const x = parseInt(td.dataset.x);
         const y = parseInt(td.dataset.y);
-        const color = td.classList.contains('red') ? 'red' : 'blue';
+        const color = BUTTON_COLORS.find(c => td.classList.contains(c));
         
         rotateGrid(x, y, color);
         operationHistory.push({x, y, color});
@@ -924,11 +1010,12 @@
         
         // 获取所有按钮
         const buttons = [];
-        document.querySelectorAll('#operationPanel td.red, #operationPanel td.blue').forEach(td => {
+        document.querySelectorAll('#operationPanel td.red, #operationPanel td.blue, #operationPanel td.green, #operationPanel td.yellow').forEach(td => {
+            const color = BUTTON_COLORS.find(c => td.classList.contains(c));
             buttons.push({
                 x: parseInt(td.dataset.x),
                 y: parseInt(td.dataset.y),
-                color: td.classList.contains('red') ? 'red' : 'blue'
+                color: color
             });
         });
 
@@ -975,8 +1062,24 @@
             }
         }
 
-        // 旋转矩阵
-        const rotated = color === 'red' ? rotateClockwise(matrix) : rotateCounterClockwise(matrix);
+        // 应用变换
+        let rotated;
+        switch (color) {
+            case 'red':
+                rotated = rotateClockwise(matrix);
+                break;
+            case 'blue':
+                rotated = rotateCounterClockwise(matrix);
+                break;
+            case 'green':
+                rotated = flipHorizontal(matrix);
+                break;
+            case 'yellow':
+                rotated = flipVertical(matrix);
+                break;
+            default:
+                rotated = matrix;
+        }
         
         // 生成新的点集合
         const newDots = dots.filter(([px, py]) => 
@@ -1000,7 +1103,7 @@
         panel.innerHTML = '';
         const table = createGrid(true);
         
-        // 如果游戏已经开始，复制操作面板的红蓝按钮到目标面板
+        // 如果游戏已经开始，复制操作面板的按钮到目标面板
         if (gameStarted) {
             const operationTable = document.querySelector('#operationPanel table');
             for (let i = 0; i < GRID_SIZE; i++) {
@@ -1028,7 +1131,7 @@
             hideOrder();
         }
     }
-    
+
     function showOrder() {
         // 清除所有现有的顺序标记
         document.querySelectorAll('#operationPanel .order').forEach(el => el.remove());

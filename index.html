@@ -4,58 +4,277 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>旋转矩阵</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --button-size: 30px;
+            --primary-color: #4a4a8a;
+            --secondary-color: #ff5e62;
+            --success-color: #4caf50;
+            --warning-color: #ffcc00;
+            --icon-color: #ffcc00;
+            --active-color: #4a90e2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* 顶部标题栏 - 修改布局 */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 10px;
+            flex-wrap: nowrap;
+            gap: 10px;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 10px;
+            flex: 0 0 auto;
+        }
+
+        .icon-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--icon-color);
+            font-size: 18px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .icon-button.active {
+            background: var(--active-color);
+            color: white;
+        }
+
+        .icon-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+
+        .icon-button:active {
+            transform: translateY(1px);
+        }
+
+        .hint-used::after {
+            content: "✓";
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--warning-color);
+            color: #333;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        /* 下拉菜单 */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: rgba(0, 0, 0, 0.85);
+            min-width: 160px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+            z-index: 100;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .dropdown-content button {
+            color: white;
+            padding: 10px 14px;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 14px;
+        }
+
+        .dropdown-content button:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-content button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            font-size: 2.2rem;
+            color: #ffcc00;
+            letter-spacing: 1px;
+            flex: 1;
+            min-width: 180px;
+            padding: 0 10px;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 95%;
+            max-width: 900px;
+            margin-bottom: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .info-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 8px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .info-box h3 {
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+            color: #ffcc00;
+        }
+
+        .info-box p {
+            font-size: 1.2rem;
+            font-weight: bold;
         }
 
         .container {
             display: flex;
             gap: 20px;
             width: 100%;
+            max-width: 1100px;
             justify-content: center;
+            margin-bottom: 5px;
         }
 
-        .vertical {
-            flex-direction: column;
+        .panel {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 480px;
+            border: 1px solid rgba(255,255,255,0.15);
         }
 
-        .horizontal {
-            flex-direction: row;
+        .panel-title {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #ffcc00;
+            font-size: 1.3rem;
+            text-shadow: 0 2px 3px rgba(0,0,0,0.3);
         }
 
         table {
             border-collapse: collapse;
-            background: white;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 5px 12px rgba(0,0,0,0.3);
+            margin: 0 auto;
         }
 
         td {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             border: 1px solid #ccc;
             position: relative;
             text-align: center;
+            transition: background-color 0.3s;
         }
 
         .button-container {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            max-width: 900px;
+            width: 95%;
         }
 
         button {
-            padding: 8px 16px;
+            padding: 10px 20px;
             cursor: pointer;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            font-size: 0.95rem;
+            min-width: 100px;
+            flex: 1;
+        }
+
+        button:hover:not(:disabled) {
+            background: #5a5aaa;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.4);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .red {
@@ -66,51 +285,48 @@
             background-color: #4444ff;
         }
 
+        /* 修改为空心圆 */
         .dot::after {
             content: "";
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 10px;
-            height: 10px;
-            background: black;
+            width: 80%;
+            height: 80%;
+            border: 2px solid #222;
             border-radius: 50%;
+            background: transparent;
             transform: translate(-50%, -50%);
         }
 
-        @media (orientation: portrait) {
-            .container {
-                flex-direction: column;
-		align-items: center;
-            }
-        }
-
-        @media (orientation: landscape) {
-            .container {
-                flex-direction: row;
-            }
-        }
-
+        /* 数字居中显示 */
         .order {
             position: absolute;
-            top: 2px;
-            left: 2px;
-            font-size: 12px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            background: rgba(255, 255, 255, 0.7);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
         }
-        .count {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            font-size: 12px;
-        }
+        
         .clicked.red {
             background-color: #ff8888 !important;
         }
+        
         .clicked.blue {
             background-color: #8888ff !important;
         }
-
-        /* 新增规则弹窗样式 */
+        
+        /* 规则弹窗样式 */
         .rules-overlay {
             position: fixed;
             top: 0;
@@ -125,57 +341,425 @@
         }
 
         .rules-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 80%;
-            max-height: 80vh;
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            padding: 25px;
+            border-radius: 15px;
+            max-width: 90%;
+            max-height: 90vh;
             overflow-y: auto;
+            color: white;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+            border: 2px solid #ffcc00;
+            position: relative;
         }
 
         .rules-title {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            color: #ffcc00;
         }
 
         .rules-text {
             font-size: 16px;
-            line-height: 1.5;
+            line-height: 1.6;
+        }
+
+        .rules-text p {
+            margin: 15px 0;
+            padding-left: 10px;
+            border-left: 3px solid #ffcc00;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #startGame {
+            margin: 10px 0;
+            padding: 12px 35px;
+            font-size: 18px;
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            min-width: 180px;
+            border-radius: 45px;
+            box-shadow: 0 5px 12px rgba(0,0,0,0.4);
+        }
+        
+        #startGame:hover {
+            background: linear-gradient(to right, #ffaa77, #ff6e72);
+            transform: translateY(-2px) scale(1.04);
+        }
+        
+        /* 横幅消息样式 */
+        .banner-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 2000;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            border: 2px solid var(--warning-color);
+            min-width: 350px;
+            max-width: 90%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .banner-message.show {
+            opacity: 1;
+            pointer-events: auto;
+            animation: fadeInOut 3s forwards;
+        }
+        
+        .banner-message.success {
+            border-color: var(--success-color);
+            color: #aaffaa;
+        }
+        
+        .banner-message.error {
+            border-color: #ff4444;
+            color: #ffaaaa;
+        }
+        
+        .banner-message.info {
+            border-color: #4444ff;
+            color: #aaaaff;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -40%); }
+            20% { opacity: 1; transform: translate(-50%, -50%); }
+            80% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -60%); }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .panel {
+                max-width: 95%;
+                padding: 12px;
+            }
+            
+            .game-info {
+                flex-direction: row;
+                gap: 6px;
+                justify-content: space-around;
+            }
+            
+            .button-container {
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            button {
+                min-width: 90px;
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .header-container {
+                flex-direction: row;
+                gap: 8px;
+                justify-content: space-between;
+            }
+            
+            .header-icons {
+                gap: 8px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+                min-width: auto;
+            }
+            
+            .icon-button {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                gap: 10px;
+            }
+            
+            h1 {
+                font-size: 1.6rem;
+            }
+            
+            .panel-title {
+                font-size: 1.2rem;
+            }
+            
+            td {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .banner-message {
+                font-size: 18px;
+                padding: 15px 25px;
+                min-width: 280px;
+            }
+            
+            .icon-button {
+                width: 34px;
+                height: 34px;
+                font-size: 15px;
+            }
+            
+            .order {
+                width: 18px;
+                height: 18px;
+                font-size: 12px;
+            }
+            
+            .game-info {
+                gap: 4px;
+            }
+            
+            .info-box {
+                padding: 8px 5px;
+                min-width: 85px;
+            }
+            
+            .info-box h3 {
+                font-size: 0.85rem;
+            }
+            
+            .info-box p {
+                font-size: 1.1rem;
+            }
+            
+            .button-container {
+                gap: 6px;
+            }
+            
+            button {
+                min-width: 80px;
+                padding: 7px 10px;
+                font-size: 0.85rem;
+            }
+            
+            #startGame {
+                padding: 10px 30px;
+                font-size: 16px;
+                min-width: 160px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header-container {
+                gap: 5px;
+            }
+            
+            .header-icons {
+                gap: 5px;
+            }
+            
+            .icon-button {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+            
+            h1 {
+                font-size: 1.4rem;
+                padding: 0 5px;
+            }
+            
+            .game-info {
+                gap: 3px;
+            }
+            
+            .info-box {
+                min-width: 75px;
+                padding: 6px 3px;
+            }
+            
+            .info-box h3 {
+                font-size: 0.75rem;
+            }
+            
+            .info-box p {
+                font-size: 0.95rem;
+            }
+            
+            .button-container {
+                gap: 4px;
+            }
+            
+            button {
+                min-width: 70px;
+                padding: 6px 8px;
+                font-size: 0.8rem;
+            }
+            
+            td {
+                width: 28px;
+                height: 28px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="operationPanel"></div>
-        <div id="targetPanel"></div>
-    </div>
-    <div class="button-container" id="buttonContainer"></div>
-
-    <!-- 添加规则弹窗 -->
-    <div class="rules-overlay" id="rulesOverlay">
-        <div class="rules-content">
-            <div class="rules-title">规则</div>
-            <div class="rules-text">
-                <p>1.请通过点击红色或者蓝色按钮改变黑色圆点的位置，让操作盘面和目标盘面的黑点位置一致。</p>
-                <p>2.每一个按钮最多点击1次。</p>
-                <p>3.每个按钮可控制以它为中心周围3 * 3范围内所有黑点的移动。移动时将该范围看成一个矩阵作相应方向的旋转。</p>
-                <p>4.红色按钮会顺时针旋转矩阵90°，蓝色按钮会逆时针旋转矩阵90°。</p>
+    <!-- 顶部标题栏 - 修改布局 -->
+    <div class="header-container">
+        <!-- 左侧图标组 -->
+        <div class="header-icons">
+            <div class="icon-button" id="showRules">
+                <i class="fas fa-question"></i>
+            </div>
+            <div class="icon-button" id="toggleOrder">
+                <i class="fas fa-exclamation"></i>
+            </div>
+        </div>
+        
+        <!-- 中间标题 -->
+        <h1>旋转矩阵</h1>
+        
+        <!-- 右侧图标组 -->
+        <div class="header-icons">
+            <div class="icon-button" id="showAnswer">
+                <i class="fas fa-lightbulb"></i>
+            </div>
+            <div class="dropdown">
+                <div class="icon-button" id="menuButton">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="dropdown-content">
+                    <button id="decreaseSize"><i class="fas fa-minus-circle"></i> 减小盘面</button>
+                    <button id="increaseSize"><i class="fas fa-plus-circle"></i> 增大盘面</button>
+                </div>
             </div>
         </div>
     </div>
+    
+    <div class="game-info">
+        <div class="info-box">
+            <h3>当前盘面大小</h3>
+            <p id="gridSizeDisplay">7 × 7</p>
+        </div>
+        <div class="info-box">
+            <h3>操作次数</h3>
+            <p id="moveCount">0</p>
+        </div>
+        <div class="info-box">
+            <h3>游戏状态</h3>
+            <p id="gameStatus">未开始</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="panel">
+            <h3 class="panel-title">操作盘面</h3>
+            <div id="operationPanel"></div>
+        </div>
+        <div class="panel">
+            <h3 class="panel-title">目标盘面</h3>
+            <div id="targetPanel"></div>
+        </div>
+    </div>
+    
+    <button id="startGame">开始游戏</button>
+    
+    <div class="button-container" id="buttonContainer"></div>
+
+    <!-- 规则弹窗 -->
+    <div class="rules-overlay" id="rulesOverlay">
+        <div class="rules-content">
+            <button class="close-btn" id="closeRules">×</button>
+            <div class="rules-title">游戏规则</div>
+            <div class="rules-text">
+                <p>1. 请通过点击红色或者蓝色按钮改变黑色圆点的位置，让操作盘面和目标盘面的黑点位置一致。</p>
+                <p>2. 每一个按钮最多点击1次。</p>
+                <p>3. 每个按钮可控制以它为中心周围3×3范围内所有黑点的移动。移动时将该范围看成一个矩阵作相应方向的旋转。</p>
+                <p>4. 红色按钮会顺时针旋转矩阵90°，蓝色按钮会逆时针旋转矩阵90°。</p>
+                <p>5. 盘面大小可以调整，最小为5×5，最大为9×9。</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 横幅消息 -->
+    <div class="banner-message" id="bannerMessage"></div>
 
 <script>
-    const GRID_SIZE = 7;
-    const TOTAL_BUTTONS = 14;
-    const RED_BUTTONS = 7;
-    const BLUE_BUTTONS = 7;
-    const DOTS = 14;
+    // 使用变量定义盘面大小
+    let GRID_SIZE = 7;
+    let INNER_SIZE = GRID_SIZE - 2;
+    const MIN_GRID_SIZE = 5;
+    const MAX_GRID_SIZE = 9;
+    
+    // 按钮和黑点数量基于盘面大小
+    let RED_BUTTONS = Math.floor(INNER_SIZE * INNER_SIZE / 2);
+    let BLUE_BUTTONS = Math.floor(INNER_SIZE * INNER_SIZE / 2);
+    let TOTAL_BUTTONS = RED_BUTTONS + BLUE_BUTTONS;
+    let DOTS = Math.floor(INNER_SIZE * INNER_SIZE * 0.6);
 
     let operationHistory = [];
     let solutionSteps = [];
     let initialDots = [];
+    let moveCount = 0;
+    let gameStarted = false; // 标记游戏是否已开始
+    let isOrderVisible = false; // 是否显示顺序
+    let isAnswerVisible = false; // 是否显示答案
+    let hintUsed = false; // 是否使用过提示
+    let isRulesVisible = false; // 规则窗口是否显示
+    let isMenuVisible = false; // 菜单是否显示
+
+    // 显示横幅消息
+    function showBannerMessage(message, type = "info") {
+        const banner = document.getElementById('bannerMessage');
+        banner.textContent = message;
+        banner.className = `banner-message ${type}`;
+        banner.classList.add('show');
+        
+        // 点击消失
+        banner.onclick = () => {
+            banner.classList.remove('show');
+        };
+        
+        // 3秒后自动消失
+        setTimeout(() => {
+            banner.classList.remove('show');
+        }, 3000);
+    }
+
+    function updateGridSizeDisplay() {
+        document.getElementById('gridSizeDisplay').textContent = `${GRID_SIZE} × ${GRID_SIZE}`;
+    }
 
     function createGrid(isTarget = false) {
         const table = document.createElement('table');
@@ -185,7 +769,7 @@
                 const td = document.createElement('td');
                 td.dataset.x = i;
                 td.dataset.y = j;
-                if (!isTarget) {
+                if (!isTarget && gameStarted) {
                     td.addEventListener('click', handleButtonClick);
                 }
                 tr.appendChild(td);
@@ -199,11 +783,11 @@
         const positions = [];
         while (positions.length < count) {
             const x = centerOnly ? 
-                Math.floor(Math.random() * 5) + 1 : 
-                Math.floor(Math.random() * 7);
+                Math.floor(Math.random() * INNER_SIZE) + 1 : 
+                Math.floor(Math.random() * GRID_SIZE);
             const y = centerOnly ? 
-                Math.floor(Math.random() * 5) + 1 : 
-                Math.floor(Math.random() * 7);
+                Math.floor(Math.random() * INNER_SIZE) + 1 : 
+                Math.floor(Math.random() * GRID_SIZE);
             const pos = `${x},${y}`;
             if (!positions.includes(pos)) positions.push(pos);
         }
@@ -215,46 +799,49 @@
         panel.innerHTML = '';
         const table = createGrid();
 
-        // 生成所有中心区域的候选位置（5x5=25个）
-        const allCenterPositions = [];
-        for (let x = 1; x <= 5; x++) {
-            for (let y = 1; y <= 5; y++) {
-                allCenterPositions.push(`${x},${y}`);
+        // 如果游戏已经开始，生成按钮和点
+        if (gameStarted) {
+            // 生成所有中心区域的候选位置
+            const allCenterPositions = [];
+            for (let x = 1; x <= INNER_SIZE; x++) {
+                for (let y = 1; y <= INNER_SIZE; y++) {
+                    allCenterPositions.push(`${x},${y}`);
+                }
             }
+
+            // 随机打乱所有中心位置
+            for (let i = allCenterPositions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allCenterPositions[i], allCenterPositions[j]] = [allCenterPositions[j], allCenterPositions[i]];
+            }
+
+            // 确保总共选取足够数量的位置
+            const selectedPositions = allCenterPositions.slice(0, TOTAL_BUTTONS);
+
+            // 分配按钮
+            const redPositions = selectedPositions.slice(0, RED_BUTTONS);
+            const bluePositions = selectedPositions.slice(RED_BUTTONS, TOTAL_BUTTONS);
+
+            // 应用红色按钮
+            redPositions.forEach(pos => {
+                const [x, y] = pos.split(',').map(Number);
+                table.rows[x].cells[y].classList.add('red');
+            });
+
+            // 应用蓝色按钮
+            bluePositions.forEach(pos => {
+                const [x, y] = pos.split(',').map(Number);
+                table.rows[x].cells[y].classList.add('blue');
+            });
+
+            // 生成黑点
+            const dotPositions = generateRandomPositions(DOTS);
+            initialDots = dotPositions;
+            dotPositions.forEach(pos => {
+                const [x, y] = pos.split(',').map(Number);
+                table.rows[x].cells[y].classList.add('dot');
+            });
         }
-
-        // 随机打乱所有中心位置
-        for (let i = allCenterPositions.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [allCenterPositions[i], allCenterPositions[j]] = [allCenterPositions[j], allCenterPositions[i]];
-        }
-
-        // 确保总共选取14个不重复的位置
-        const selectedPositions = allCenterPositions.slice(0, 14);
-
-        // 分配前7个给红色，后7个给蓝色
-        const redPositions = selectedPositions.slice(0, 7);
-        const bluePositions = selectedPositions.slice(7, 14);
-
-        // 应用红色按钮
-        redPositions.forEach(pos => {
-            const [x, y] = pos.split(',').map(Number);
-            table.rows[x].cells[y].classList.add('red');
-        });
-
-        // 应用蓝色按钮
-        bluePositions.forEach(pos => {
-            const [x, y] = pos.split(',').map(Number);
-            table.rows[x].cells[y].classList.add('blue');
-        });
-
-        // 生成黑点（保持原逻辑）
-        const dotPositions = generateRandomPositions(DOTS);
-        initialDots = dotPositions;
-        dotPositions.forEach(pos => {
-            const [x, y] = pos.split(',').map(Number);
-            table.rows[x].cells[y].classList.add('dot');
-        });
 
         panel.appendChild(table);
     }
@@ -305,6 +892,8 @@
     }
 
     function handleButtonClick(e) {
+        if (!gameStarted) return;
+        
         const td = e.target;
         if ((!td.classList.contains('red') && !td.classList.contains('blue')) || 
             td.classList.contains('clicked')) return;
@@ -316,9 +905,23 @@
         
         rotateGrid(x, y, color);
         operationHistory.push({x, y, color});
+        
+        // 更新移动计数
+        moveCount++;
+        document.getElementById('moveCount').textContent = moveCount;
+        
+        // 更新顺序显示
+        if (isOrderVisible) {
+            showOrder();
+        }
+        
+        // 更新按钮状态
+        updateButtonStates();
     }
 
     function generateTargetPanel() {
+        if (!gameStarted) return;
+        
         // 获取所有按钮
         const buttons = [];
         document.querySelectorAll('#operationPanel td.red, #operationPanel td.blue').forEach(td => {
@@ -397,50 +1000,154 @@
         panel.innerHTML = '';
         const table = createGrid(true);
         
-        // 复制操作面板的红蓝按钮到目标面板
-        const operationTable = document.querySelector('#operationPanel table');
-        for (let i = 0; i < GRID_SIZE; i++) {
-            for (let j = 0; j < GRID_SIZE; j++) {
-                const opTd = operationTable.rows[i].cells[j];
-                const targetTd = table.rows[i].cells[j];
-                targetTd.className = opTd.className; // 复制所有类
+        // 如果游戏已经开始，复制操作面板的红蓝按钮到目标面板
+        if (gameStarted) {
+            const operationTable = document.querySelector('#operationPanel table');
+            for (let i = 0; i < GRID_SIZE; i++) {
+                for (let j = 0; j < GRID_SIZE; j++) {
+                    const opTd = operationTable.rows[i].cells[j];
+                    const targetTd = table.rows[i].cells[j];
+                    targetTd.className = opTd.className; // 复制所有类
+                }
             }
         }
 
         panel.appendChild(table);
     }
 
-function initButtons() {
-    const container = document.getElementById('buttonContainer');
-    container.innerHTML = `
-        <button id="showRules">规则</button>
-        <button id="undo">撤回</button>
-        <button id="submit">提交答案</button>
-    `;  // 移除showAnswer按钮
-
-    // 规则按钮事件
-    document.getElementById('showRules').addEventListener('click', () => {
-        document.getElementById('rulesOverlay').style.display = 'flex';
-    });
-
-    // 关闭规则弹窗
-    document.getElementById('rulesOverlay').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('rulesOverlay')) {
-            document.getElementById('rulesOverlay').style.display = 'none';
+    // 显示/隐藏操作顺序
+    function toggleOrder() {
+        isOrderVisible = !isOrderVisible;
+        const btn = document.getElementById('toggleOrder');
+        
+        if (isOrderVisible) {
+            btn.classList.add('active');
+            showOrder();
+        } else {
+            btn.classList.remove('active');
+            hideOrder();
         }
-    });
+    }
+    
+    function showOrder() {
+        // 清除所有现有的顺序标记
+        document.querySelectorAll('#operationPanel .order').forEach(el => el.remove());
+        
+        // 添加新的顺序标记
+        operationHistory.forEach((step, index) => {
+            const td = document.querySelector(
+                `#operationPanel td[data-x="${step.x}"][data-y="${step.y}"]`
+            );
+            if (td) {
+                const order = document.createElement('div');
+                order.className = 'order';
+                order.textContent = index + 1;
+                td.appendChild(order);
+            }
+        });
+    }
+    
+    function hideOrder() {
+        document.querySelectorAll('#operationPanel .order').forEach(el => el.remove());
+    }
+    
+    // 显示/隐藏答案
+    function toggleAnswer() {
+        isAnswerVisible = !isAnswerVisible;
+        const btn = document.getElementById('showAnswer');
+        
+        if (isAnswerVisible) {
+            btn.classList.add('active');
+            showAnswer();
+            hintUsed = true;
+            btn.classList.add('hint-used');
+        } else {
+            btn.classList.remove('active');
+            hideAnswer();
+        }
+    }
+    
+    function showAnswer() {
+        // 清除所有现有的答案标记
+        document.querySelectorAll('#targetPanel .order').forEach(el => el.remove());
+        
+        const validSteps = solutionSteps.filter(step => step.count === 1);
+        
+        validSteps.forEach((step, index) => {
+            const td = document.querySelector(
+                `#targetPanel td[data-x="${step.x}"][data-y="${step.y}"]`
+            );
+            if (td) {
+                const order = document.createElement('div');
+                order.className = 'order';
+                order.textContent = index + 1;
+                td.appendChild(order);
+            }
+        });
+    }
+    
+    function hideAnswer() {
+        document.querySelectorAll('#targetPanel .order').forEach(el => el.remove());
+    }
 
-    // 撤回按钮事件
-    document.getElementById('undo').addEventListener('click', () => {
-        if (operationHistory.length === 0) return;
-        const last = operationHistory.pop();
-        const td = document.querySelector(`#operationPanel td[data-x="${last.x}"][data-y="${last.y}"]`);
-        td.classList.remove('clicked');
-        rotateGrid(last.x, last.y, last.color === 'red' ? 'blue' : 'red');
-    });
+    // 更新按钮状态
+    function updateButtonStates() {
+        const undoBtn = document.getElementById('undo');
+        const resetBtn = document.getElementById('reset');
+        
+        // 当操作次数为0时，禁用撤回和重置按钮
+        if (moveCount === 0) {
+            undoBtn.disabled = true;
+            resetBtn.disabled = true;
+        } else {
+            undoBtn.disabled = false;
+            resetBtn.disabled = false;
+        }
+    }
 
-    // 提交按钮事件
-    document.getElementById('submit').addEventListener('click', () => {
+    function initButtons() {
+        const container = document.getElementById('buttonContainer');
+        container.innerHTML = `
+            <button id="undo" disabled>撤回</button>
+            <button id="reset" disabled>重置</button>
+            <button id="submit">提交</button>
+        `;
+
+        // 撤回按钮事件
+        document.getElementById('undo').addEventListener('click', () => {
+            if (!gameStarted || operationHistory.length === 0) return;
+            const last = operationHistory.pop();
+            const td = document.querySelector(`#operationPanel td[data-x="${last.x}"][data-y="${last.y}"]`);
+            td.classList.remove('clicked');
+            rotateGrid(last.x, last.y, last.color === 'red' ? 'blue' : 'red');
+            
+            // 更新移动计数
+            moveCount--;
+            document.getElementById('moveCount').textContent = moveCount;
+            
+            // 更新顺序显示
+            if (isOrderVisible) {
+                showOrder();
+            }
+            
+            // 更新按钮状态
+            updateButtonStates();
+        });
+
+        // 重置按钮事件
+        document.getElementById('reset').addEventListener('click', () => {
+            if (!gameStarted) return;
+            resetOperation();
+        });
+
+        // 提交按钮事件
+        document.getElementById('submit').addEventListener('click', () => {
+            if (!gameStarted) return;
+            checkCompletion(true);
+        });
+    }
+
+    function checkCompletion(showAlert = false) {
         const getDots = panel => 
             [...panel.querySelectorAll('.dot')].map(d => [
                 parseInt(d.parentElement.rowIndex),
@@ -450,16 +1157,211 @@ function initButtons() {
         const opDots = getDots(document.getElementById('operationPanel'));
         const targetDots = getDots(document.getElementById('targetPanel'));
         
-        alert(JSON.stringify(opDots) === JSON.stringify(targetDots) 
-            ? '成功！' : '失败！');
-    });
-}
+        const isComplete = JSON.stringify(opDots) === JSON.stringify(targetDots);
+        
+        if (isComplete) {
+            document.getElementById('gameStatus').textContent = "已完成";
+            document.getElementById('gameStatus').style.color = "#4caf50";
+            if (showAlert) {
+                showBannerMessage("恭喜！谜题已成功解决！", "success");
+            }
+        } else {
+            document.getElementById('gameStatus').textContent = "进行中";
+            document.getElementById('gameStatus').style.color = "white";
+            if (showAlert) {
+                showBannerMessage("尚未完成，请继续尝试！", "error");
+            }
+        }
+        
+        return isComplete;
+    }
+
+    function resetOperation() {
+        // 重置操作历史
+        operationHistory = [];
+        moveCount = 0;
+        document.getElementById('moveCount').textContent = moveCount;
+        document.getElementById('gameStatus').textContent = "进行中";
+        document.getElementById('gameStatus').style.color = "white";
+        
+        // 清除所有标记
+        hideOrder();
+        
+        // 重新初始化操作面板（恢复到初始状态）
+        const table = document.querySelector('#operationPanel table');
+        for (let i = 0; i < GRID_SIZE; i++) {
+            for (let j = 0; j < GRID_SIZE; j++) {
+                const td = table.rows[i].cells[j];
+                // 移除所有特殊类
+                td.classList.remove('dot', 'clicked');
+                
+                // 重新添加初始的按钮类
+                if (td.classList.contains('red') || td.classList.contains('blue')) {
+                    td.classList.add(td.classList.contains('red') ? 'red' : 'blue');
+                }
+                
+                // 重新添加初始的点
+                const pos = `${i},${j}`;
+                if (initialDots.includes(pos)) {
+                    td.classList.add('dot');
+                }
+            }
+        }
+        
+        // 更新按钮状态
+        updateButtonStates();
+    }
+
+    function changeGridSize(delta) {
+        const newSize = GRID_SIZE + delta;
+        if (newSize >= MIN_GRID_SIZE && newSize <= MAX_GRID_SIZE) {
+            GRID_SIZE = newSize;
+            INNER_SIZE = GRID_SIZE - 2;
+            
+            // 更新按钮和黑点数量
+            RED_BUTTONS = Math.floor(INNER_SIZE * INNER_SIZE / 2);
+            BLUE_BUTTONS = Math.floor(INNER_SIZE * INNER_SIZE / 2);
+            TOTAL_BUTTONS = RED_BUTTONS + BLUE_BUTTONS;
+            DOTS = Math.floor(INNER_SIZE * INNER_SIZE * 0.6);
+            
+            // 更新显示
+            updateGridSizeDisplay();
+            
+            // 重置游戏状态
+            gameStarted = false;
+            moveCount = 0;
+            document.getElementById('moveCount').textContent = moveCount;
+            document.getElementById('gameStatus').textContent = "未开始";
+            document.getElementById('startGame').textContent = "开始游戏";
+            
+            // 清除顺序和答案显示
+            hideOrder();
+            hideAnswer();
+            
+            // 重新创建空白盘面
+            initOperationPanel();
+            initTargetPanel();
+            
+            // 更新按钮状态
+            updateButtonStates();
+        }
+    }
+
+    function startGame() {
+        // 清空操作历史
+        operationHistory = [];
+        
+        gameStarted = true;
+        moveCount = 0;
+        document.getElementById('moveCount').textContent = moveCount;
+        document.getElementById('gameStatus').textContent = "进行中";
+        document.getElementById('gameStatus').style.color = "white";
+        
+        // 更新按钮文字
+        document.getElementById('startGame').textContent = "新的开始";
+        
+        // 重置提示标记
+        hintUsed = false;
+        document.getElementById('showAnswer').classList.remove('hint-used');
+        
+        // 清除顺序和答案显示
+        hideOrder();
+        hideAnswer();
+        
+        // 初始化操作盘面和目标盘面
+        initOperationPanel();
+        initTargetPanel();
+        generateTargetPanel();
+        
+        // 保存初始操作盘面状态
+        const table = document.querySelector('#operationPanel table');
+        initialDots = [];
+        for (let i = 0; i < GRID_SIZE; i++) {
+            for (let j = 0; j < GRID_SIZE; j++) {
+                const td = table.rows[i].cells[j];
+                if (td.classList.contains('dot')) {
+                    initialDots.push(`${i},${j}`);
+                }
+            }
+        }
+        
+        // 初始化按钮
+        initButtons();
+        
+        // 应用之前的状态
+        if (isOrderVisible) {
+            document.getElementById('toggleOrder').classList.add('active');
+        }
+        if (isAnswerVisible) {
+            document.getElementById('showAnswer').classList.add('active');
+            showAnswer();
+        }
+    }
 
     // 初始化游戏
-    initOperationPanel();
-    initTargetPanel();
-    generateTargetPanel();
-    initButtons();
+    function initGame() {
+        // 创建空白盘面
+        initOperationPanel();
+        initTargetPanel();
+        
+        // 初始化按钮
+        initButtons();
+        updateGridSizeDisplay();
+        
+        // 添加盘面大小控制
+        document.getElementById('decreaseSize').addEventListener('click', () => changeGridSize(-1));
+        document.getElementById('increaseSize').addEventListener('click', () => changeGridSize(1));
+        
+        // 添加开始游戏按钮事件
+        document.getElementById('startGame').addEventListener('click', startGame);
+        
+        // 规则弹窗外部点击关闭
+        document.getElementById('rulesOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+                isRulesVisible = false;
+                document.getElementById('showRules').classList.remove('active');
+            }
+        });
+        
+        // 规则按钮事件
+        document.getElementById('showRules').addEventListener('click', () => {
+            isRulesVisible = !isRulesVisible;
+            if (isRulesVisible) {
+                document.getElementById('rulesOverlay').style.display = 'flex';
+                document.getElementById('showRules').classList.add('active');
+            } else {
+                document.getElementById('rulesOverlay').style.display = 'none';
+                document.getElementById('showRules').classList.remove('active');
+            }
+        });
+
+        // 关闭规则弹窗
+        document.getElementById('closeRules').addEventListener('click', () => {
+            document.getElementById('rulesOverlay').style.display = 'none';
+            isRulesVisible = false;
+            document.getElementById('showRules').classList.remove('active');
+        });
+
+        // 显示/隐藏顺序按钮事件
+        document.getElementById('toggleOrder').addEventListener('click', toggleOrder);
+
+        // 显示/隐藏答案按钮事件
+        document.getElementById('showAnswer').addEventListener('click', toggleAnswer);
+        
+        // 菜单按钮事件
+        document.getElementById('menuButton').addEventListener('click', () => {
+            isMenuVisible = !isMenuVisible;
+            if (isMenuVisible) {
+                document.getElementById('menuButton').classList.add('active');
+            } else {
+                document.getElementById('menuButton').classList.remove('active');
+            }
+        });
+    }
+
+    // 页面加载完成后初始化游戏
+    window.addEventListener('DOMContentLoaded', initGame);
 </script>
 
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>旋转矩阵</title>
+    <title>四色变换</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -243,6 +243,17 @@
             display: flex;
             gap: 12px;
             justify-content: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            max-width: 900px;
+            width: 95%;
+        }
+
+        .control-buttons-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
             margin-top: 15px;
             flex-wrap: wrap;
             max-width: 900px;
@@ -416,6 +427,13 @@
             min-width: 180px;
             border-radius: 45px;
             box-shadow: 0 5px 12px rgba(0,0,0,0.4);
+            /* 固定按钮高度 */
+            height: 50px;
+            line-height: 50px; /* 使文字垂直居中 */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 35px;
         }
         
         #startGame:hover {
@@ -493,7 +511,8 @@
                 justify-content: space-around;
             }
             
-            .button-container {
+            .button-container, 
+            .control-buttons-container {
                 flex-direction: row;
                 align-items: center;
                 gap: 8px;
@@ -525,6 +544,11 @@
                 height: 36px;
                 font-size: 16px;
             }
+            
+            #startGame {
+                height: 46px;
+                line-height: 46px;
+            }
         }
         
         @media (max-width: 600px) {
@@ -549,7 +573,7 @@
             .banner-message {
                 font-size: 18px;
                 padding: 15px 25px;
-        min-width: 280px;
+                min-width: 280px;
             }
             
             .icon-button {
@@ -581,7 +605,8 @@
                 font-size: 1.1rem;
             }
             
-            .button-container {
+            .button-container, 
+            .control-buttons-container {
                 gap: 6px;
             }
             
@@ -592,9 +617,11 @@
             }
             
             #startGame {
-                padding: 10px 30px;
+                padding: 0 30px;
                 font-size: 16px;
                 min-width: 160px;
+                height: 42px;
+                line-height: 42px;
             }
         }
         
@@ -635,7 +662,8 @@
                 font-size: 0.95rem;
             }
             
-            .button-container {
+            .button-container, 
+            .control-buttons-container {
                 gap: 4px;
             }
             
@@ -648,6 +676,11 @@
             td {
                 width: 28px;
                 height: 28px;
+            }
+            
+            #startGame {
+                height: 38px;
+                line-height: 38px;
             }
         }
     </style>
@@ -666,7 +699,7 @@
         </div>
         
         <!-- 中间标题 -->
-        <h1>旋转矩阵</h1>
+        <h1>四色变换</h1>
         
         <!-- 右侧图标组 -->
         <div class="header-icons">
@@ -699,6 +732,9 @@
             <p id="gameStatus">未开始</p>
         </div>
     </div>
+    
+    <!-- 新增控制按钮容器（撤回、重置、提交） -->
+    <div class="control-buttons-container" id="buttonContainer"></div>
 
     <div class="container">
         <div class="panel">
@@ -713,7 +749,7 @@
     
     <button id="startGame">开始游戏</button>
     
-    <div class="button-container" id="buttonContainer"></div>
+    <div class="button-container"></div>
 
     <!-- 规则弹窗 -->
     <div class="rules-overlay" id="rulesOverlay">
@@ -1222,7 +1258,25 @@
             const last = operationHistory.pop();
             const td = document.querySelector(`#operationPanel td[data-x="${last.x}"][data-y="${last.y}"]`);
             td.classList.remove('clicked');
-            rotateGrid(last.x, last.y, last.color === 'red' ? 'blue' : 'red');
+            // 根据颜色执行撤回操作
+            let undoColor;
+            switch (last.color) {
+                case 'red':
+                    undoColor = 'blue'; // 顺时针的逆是逆时针
+                    break;
+                case 'blue':
+                    undoColor = 'red';  // 逆时针的逆是顺时针
+                    break;
+                case 'green':
+                    undoColor = 'green'; // 左右翻转是自反操作
+                    break;
+                case 'yellow':
+                    undoColor = 'yellow'; // 上下翻转是自反操作
+                    break;
+                default:
+                    undoColor = last.color;
+            }
+            rotateGrid(last.x, last.y, undoColor);
             
             // 更新移动计数
             moveCount--;
